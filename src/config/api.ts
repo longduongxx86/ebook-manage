@@ -49,14 +49,15 @@ export const API_ENDPOINTS = {
 
   // Users
   users: {
-    list: `${API_BASE_URL}/users`,
-    detail: (id: string) => `${API_BASE_URL}/users/${id}`,
+    list: `${API_BASE_URL}/admin/users`,
+    detail: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
   },
 
   // Payments
   payments: {
     list: `${API_BASE_URL}/payments/all`,
     updateStatus: (id: string) => `${API_BASE_URL}/payments/${id}/status`,
+    byOrder: (id: string) => `${API_BASE_URL}/orders/${id}/payment`,
   },
 
   // Dashboard & Statistics

@@ -7,10 +7,8 @@ import { BooksPage } from './pages/BooksPage';
 import { BookForm } from './pages/BookForm';
 import { OrdersPage } from './pages/OrdersPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
-import { POSPage } from './pages/POSPage';
 import { UsersPage } from './pages/UsersPage';
 import { StatisticsPage } from './pages/StatisticsPage';
-import { PaymentsPage } from './pages/PaymentsPage';
 
 function App() {
   return (
@@ -32,12 +30,9 @@ function App() {
             <Route path="orders" element={<OrdersPage />} />
             <Route path="orders/:id" element={<OrderDetailPage />} />
             
-            {/* POS */}
-            <Route path="cart" element={<POSPage />} />
-            <Route path="checkout" element={<POSPage />} />
+            {/* POS removed */}
             
             {/* Others */}
-            <Route path="payments" element={<PaymentsPage />} />
             <Route path="statistics" element={<StatisticsPage />} />
             <Route path="users" element={<UsersPage />} />
             

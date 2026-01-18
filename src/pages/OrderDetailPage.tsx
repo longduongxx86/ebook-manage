@@ -9,7 +9,7 @@ import {
   CreditCard,
   Package
 } from 'lucide-react';
-import { orderApi } from '../services/api';
+import { orderApi, paymentApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, formatDate } from '../lib/utils';
 
@@ -40,6 +40,15 @@ interface Order {
   payment_method?: string;
 }
 
+interface Payment {
+  id: number;
+  order_id: number;
+  amount: number;
+  method: string;
+  status: string;
+  transaction_id?: string;
+}
+
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Chờ thanh toán' },
   { value: 'confirmed', label: 'Đã thanh toán' },
@@ -56,6 +65,9 @@ export function OrderDetailPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [payment, setPayment] = useState<Payment | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [updatingPayment, setUpdatingPayment] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -70,6 +82,7 @@ export function OrderDetailPage() {
       const orderData = (data as any).order;
       setOrder(orderData);
       setSelectedStatus(orderData.status);
+      await fetchPayment(orderId);
     } catch (error) {
       console.error('Error fetching order:', error);
       alert('Không thể tải thông tin đơn hàng');
@@ -93,6 +106,43 @@ export function OrderDetailPage() {
       alert('Cập nhật trạng thái thất bại');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const fetchPayment = async (orderId: string) => {
+    if (!token) return;
+    try {
+      const data = await paymentApi.getPaymentByOrder(orderId, token);
+      const p = (data as any).payment;
+      if (p) {
+        setPayment(p);
+        setPaymentStatus(p.status);
+      } else {
+        setPayment(null);
+        setPaymentStatus('');
+      }
+    } catch (error) {
+      setPayment(null);
+      setPaymentStatus('');
+    }
+  };
+
+  const handleUpdatePaymentStatus = async () => {
+    if (!token || !payment) return;
+    if (paymentStatus === payment.status) return;
+    if (!confirm(`Xác nhận đổi trạng thái thanh toán sang "${paymentStatus}"?`)) return;
+    setUpdatingPayment(true);
+    try {
+      await paymentApi.updateStatus(payment.id.toString(), paymentStatus, token);
+      setPayment((prev) => prev ? { ...prev, status: paymentStatus } : null);
+      if (paymentStatus === 'completed') {
+        setOrder((prev) => prev ? { ...prev, status: 'confirmed' } : null);
+      }
+      alert('Cập nhật thanh toán thành công');
+    } catch (error) {
+      alert('Cập nhật thanh toán thất bại');
+    } finally {
+      setUpdatingPayment(false);
     }
   };
 
@@ -243,23 +293,52 @@ export function OrderDetailPage() {
               <CreditCard className="mr-2 h-4 w-4" />
               Thanh toán
             </h3>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Phương thức:</span>
                 <span className="font-medium text-gray-900">
                   {order.payment_method === 'cod' ? 'Thanh toán khi nhận hàng' : order.payment_method || 'Chưa xác định'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Trạng thái:</span>
-                <span className={`font-medium ${
-                  ['confirmed', 'shipped', 'delivered', 'completed'].includes(order.status) ? 'text-green-600' : 
-                  order.status === 'cancelled' ? 'text-red-600' : 'text-yellow-600'
-                }`}>
-                  {['confirmed', 'shipped', 'delivered', 'completed'].includes(order.status) ? 'Đã thanh toán' : 
-                   order.status === 'cancelled' ? 'Đã hủy' : 'Chưa thanh toán'}
-                </span>
-              </div>
+              {payment ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Trạng thái thanh toán:</span>
+                    <span className={`font-medium ${
+                      payment.status === 'completed' ? 'text-green-600' :
+                      payment.status === 'failed' ? 'text-red-600' : 'text-yellow-600'
+                    }`}>
+                      {payment.status === 'completed' ? 'Đã thanh toán' :
+                       payment.status === 'failed' ? 'Thất bại' : 'Chờ thanh toán'}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <select
+                      value={paymentStatus}
+                      onChange={(e) => setPaymentStatus(e.target.value)}
+                      disabled={updatingPayment}
+                      className="block w-full rounded-md border border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                    >
+                      <option value="pending">Chờ thanh toán</option>
+                      <option value="completed">Đã thanh toán</option>
+                      <option value="failed">Thất bại</option>
+                    </select>
+                    <button
+                      onClick={handleUpdatePaymentStatus}
+                      disabled={updatingPayment || paymentStatus === payment.status}
+                      className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                        updatingPayment || paymentStatus === payment.status
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                      }`}
+                    >
+                      {updatingPayment ? 'Đang cập nhật...' : 'Cập nhật thanh toán'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-gray-600">Chưa có bản ghi thanh toán cho đơn này</div>
+              )}
             </div>
           </div>
         </div>

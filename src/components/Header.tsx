@@ -89,20 +89,22 @@ export function Header() {
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          // Assuming data structure matches notification
-          // Backend sends: {title, message, type, reference_id, created_at, is_read: false}
-          // We need to map it to our interface (id might be missing or temp)
+
+          const idFromServer = typeof data.id === 'number' ? data.id : Date.now();
+          const createdAtFromServer = data.created_at
+            ? new Date(data.created_at).toISOString()
+            : new Date().toISOString();
+
           const newNotification: Notification = {
-            id: Date.now(), // Temporary ID until refresh
+            id: idFromServer,
             title: data.title,
             message: data.message,
             type: data.type,
             is_read: false,
-            created_at: new Date().toISOString(),
+            created_at: createdAtFromServer,
             reference_id: data.reference_id
           };
 
-          // Create a unique signature for deduplication
           const signature = `${data.type}-${data.reference_id}`;
           
           if (processedRef.current.has(signature)) {
@@ -174,11 +176,7 @@ export function Header() {
   const handleMarkAllRead = async () => {
     if (!token || unreadCount === 0) return;
     try {
-      // Get IDs of unread notifications
-      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
-      if (unreadIds.length === 0) return;
-      
-      await notificationApi.markAsRead(unreadIds, token); // Or use 'all' if backend supports
+      await notificationApi.markAsRead([], token);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch (error) {

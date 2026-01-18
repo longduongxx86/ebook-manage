@@ -134,14 +134,14 @@ export const userApi = {
     return fetchAPI(API_ENDPOINTS.users.list, { token });
   },
   async updateUser(id: string | number, data: any, token: string) {
-    return fetchAPI(`${API_ENDPOINTS.users.list}/${id}`, {
+    return fetchAPI(API_ENDPOINTS.users.detail(String(id)), {
       method: 'PUT',
       body: JSON.stringify(data),
       token,
     });
   },
   async resetPassword(id: string | number, newPassword: string, token: string) {
-    return fetchAPI(`${API_ENDPOINTS.users.list}/${id}/password`, {
+    return fetchAPI(`${API_ENDPOINTS.users.detail(String(id))}/reset-password`, {
       method: 'PUT',
       body: JSON.stringify({ new_password: newPassword }),
       token,
@@ -152,6 +152,9 @@ export const userApi = {
 export const paymentApi = {
   async getPayments(token: string) {
     return fetchAPI(API_ENDPOINTS.payments.list, { token });
+  },
+  async getPaymentByOrder(orderId: string, token: string) {
+    return fetchAPI(API_ENDPOINTS.payments.byOrder(orderId), { token });
   },
   async updateStatus(id: string, status: string, token: string) {
     return fetchAPI(API_ENDPOINTS.payments.updateStatus(id), {

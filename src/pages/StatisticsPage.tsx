@@ -59,9 +59,15 @@ export function StatisticsPage() {
     try {
       if (activeTab === 'revenue') {
         const response = await dashboardApi.getCharts('30d', token);
-        // API returns { period: string, data: RevenueData[] }
-        const data = (response as { data: RevenueData[] })?.data;
-        setRevenueData(Array.isArray(data) ? data : []);
+        const raw = (response as any)?.data;
+        const mapped: RevenueData[] = Array.isArray(raw)
+          ? raw.map((item: any) => ({
+              date: item.date,
+              revenue: item.revenue,
+              orders_count: item.orders ?? item.orders_count ?? 0,
+            }))
+          : [];
+        setRevenueData(mapped);
       } else if (activeTab === 'users') {
         const data = await dashboardApi.getUserStats(token);
         setUserStats(Array.isArray(data) ? (data as UserStat[]) : []);
@@ -306,5 +312,4 @@ export function StatisticsPage() {
     </div>
   );
 }
-
 

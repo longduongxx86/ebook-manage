@@ -15,8 +15,6 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Quản lý Sách', href: '/books', icon: BookOpen },
   { name: 'Đơn hàng', href: '/orders', icon: ShoppingBag },
-  { name: 'Bán hàng (POS)', href: '/cart', icon: ShoppingCart },
-  { name: 'Thanh toán', href: '/payments', icon: CreditCard },
   { name: 'Thống kê', href: '/statistics', icon: BarChart },
   { name: 'Người dùng', href: '/users', icon: Users },
 ];
