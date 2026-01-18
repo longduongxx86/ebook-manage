@@ -45,7 +45,7 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <div className="border-t border-gray-800 p-4">
+      {/* <div className="border-t border-gray-800 p-4">
         <NavLink
           to="/settings"
           className={({ isActive }) =>
@@ -59,8 +59,8 @@ export function Sidebar() {
         >
           <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
           Cài đặt
-        </NavLink>
-      </div>
+        </NavLink> */}
+      {/* </div> */}
     </div>
   );
 }

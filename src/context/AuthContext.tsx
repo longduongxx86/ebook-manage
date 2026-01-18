@@ -29,16 +29,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore token and user from localStorage on mount
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+      const storedUserStr = localStorage.getItem(USER_KEY);
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
+      if (storedToken && storedUserStr) {
+        setToken(storedToken);
+        try {
+          const res = await authApi.getProfile(storedToken) as { user?: User };
+          const profileUser = res && res.user ? res.user : null;
+          if (profileUser) {
+            const mergedUser = { ...JSON.parse(storedUserStr), ...profileUser };
+            setUser(mergedUser);
+            localStorage.setItem(USER_KEY, JSON.stringify(mergedUser));
+          } else {
+            setUser(JSON.parse(storedUserStr));
+          }
+        } catch {
+          setUser(JSON.parse(storedUserStr));
+        }
+      }
 
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (credentials: any) => {
