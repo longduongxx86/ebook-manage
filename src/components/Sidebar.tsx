@@ -7,7 +7,8 @@ import {
   CreditCard, 
   BarChart, 
   Users, 
-  Settings 
+  Settings, 
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -16,6 +17,7 @@ const navigation = [
   { name: 'Quản lý Sách', href: '/books', icon: BookOpen },
   { name: 'Đơn hàng', href: '/orders', icon: ShoppingBag },
   { name: 'Thống kê', href: '/statistics', icon: BarChart },
+  { name: 'Tin nhắn', href: '/chat', icon: MessageCircle },
   { name: 'Người dùng', href: '/users', icon: Users },
 ];
 

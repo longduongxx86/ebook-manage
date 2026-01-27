@@ -84,6 +84,17 @@ export const API_ENDPOINTS = {
     list: `${API_BASE_URL}/notifications`,
     markRead: `${API_BASE_URL}/notifications/read`,
   },
+
+  // Chat
+  chat: {
+    conversations: `${API_BASE_URL}/admin/chat/conversations`,
+    history: `${API_BASE_URL}/chat/history`,
+    ws: (token: string) => {
+       const url = new URL(API_BASE_URL);
+       const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+       return `${protocol}//${url.host}/ws?token=${token}`;
+    }
+  },
 };
 
 export function getHeaders(token?: string, isMultipart: boolean = false): Record<string, string> {

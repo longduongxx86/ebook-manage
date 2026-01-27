@@ -9,6 +9,7 @@ import { OrdersPage } from './pages/OrdersPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
 import { UsersPage } from './pages/UsersPage';
 import { StatisticsPage } from './pages/StatisticsPage';
+import ChatPage from './pages/ChatPage';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             
             {/* Others */}
             <Route path="statistics" element={<StatisticsPage />} />
+            <Route path="chat" element={<ChatPage />} />
             <Route path="users" element={<UsersPage />} />
             
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
