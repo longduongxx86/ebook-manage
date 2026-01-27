@@ -57,6 +57,11 @@ const ChatPage: React.FC = () => {
       fetchConversations();
   }, [token]);
 
+  useEffect(() => {
+      localStorage.setItem('manage_chat_unread', '0');
+      window.dispatchEvent(new CustomEvent('manage-chat-unread', { detail: 0 }));
+  }, []);
+
   // Handle auto-selection from location state
   useEffect(() => {
     if (location.state?.conversationId && conversations.length > 0) {

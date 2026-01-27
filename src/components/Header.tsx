@@ -92,7 +92,7 @@ export function Header() {
           
           let newNotification: Notification | null = null;
 
-          if (parsedData.type === 'notification') {
+          if (parsedData.type === "notification") {
             const payload = parsedData.payload;
             newNotification = {
               id: payload.id || Date.now(),
@@ -103,29 +103,31 @@ export function Header() {
               created_at: payload.created_at ? new Date(payload.created_at).toISOString() : new Date().toISOString(),
               reference_id: payload.reference_id
             };
-          } else if (parsedData.type === 'chat') {
+          } else if (parsedData.type === "chat") {
             const payload = parsedData.payload;
-            // Only show notification if we are not on the chat page? 
-            // For now, show it always or maybe checks current path.
-            // But Header doesn't know about current path easily without useLocation inside useEffect or similar.
-            // Let's just show it.
+            if (payload.is_admin) {
+              return;
+            }
+            const senderName =
+              payload.sender?.full_name ||
+              payload.sender?.email ||
+              "Khách hàng";
             newNotification = {
               id: payload.id || Date.now(),
-              title: `Tin nhắn mới từ ${payload.sender?.full_name || 'Khách hàng'}`,
+              title: `Tin nhắn mới từ ${senderName}`,
               message: payload.content,
-              type: 'chat',
+              type: "chat",
               is_read: false,
               created_at: payload.created_at ? new Date(payload.created_at * 1000).toISOString() : new Date().toISOString(),
-              reference_id: payload.conversation_id // Use conversation_id to navigate if needed
+              reference_id: payload.conversation_id
             };
           }
 
           if (!newNotification) return;
 
-          const signature = `${newNotification.type}-${newNotification.reference_id}-${newNotification.created_at}`; // Enhanced signature
+          const signature = `${newNotification.type}-${newNotification.reference_id}-${newNotification.created_at}`;
           
           if (processedRef.current.has(signature)) {
-            // console.log("Duplicate notification ignored:", signature);
             return;
           }
           
@@ -133,6 +135,13 @@ export function Header() {
 
           setNotifications(prev => [newNotification!, ...prev]);
           setUnreadCount(prev => prev + 1);
+
+          if (newNotification.type === "chat") {
+            const prevChatUnread = Number(localStorage.getItem("manage_chat_unread") || "0");
+            const nextChatUnread = Number.isNaN(prevChatUnread) ? 1 : prevChatUnread + 1;
+            localStorage.setItem("manage_chat_unread", String(nextChatUnread));
+            window.dispatchEvent(new CustomEvent("manage-chat-unread", { detail: nextChatUnread }));
+          }
         } catch (e) {
           console.error("Error parsing websocket message", e);
         }

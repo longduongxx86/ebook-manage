@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -22,6 +23,25 @@ const navigation = [
 ];
 
 export function Sidebar() {
+  const [chatUnread, setChatUnread] = useState(0);
+
+  useEffect(() => {
+    const stored = Number(localStorage.getItem('manage_chat_unread') || '0');
+    if (!Number.isNaN(stored)) {
+      setChatUnread(stored);
+    }
+    const handler = (event: Event) => {
+      const custom = event as CustomEvent<number>;
+      if (typeof custom.detail === 'number') {
+        setChatUnread(custom.detail);
+      }
+    };
+    window.addEventListener('manage-chat-unread', handler as EventListener);
+    return () => {
+      window.removeEventListener('manage-chat-unread', handler as EventListener);
+    };
+  }, []);
+
   return (
     <div className="flex h-full w-64 flex-col bg-gray-900 text-white">
       <div className="flex h-16 items-center px-6">
@@ -43,7 +63,14 @@ export function Sidebar() {
             }
           >
             <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-            {item.name}
+            <span className="flex items-center gap-2">
+              {item.name}
+              {item.name === 'Tin nhắn' && chatUnread > 0 && (
+                <span className="ml-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-semibold text-white">
+                  {chatUnread > 9 ? '9+' : chatUnread}
+                </span>
+              )}
+            </span>
           </NavLink>
         ))}
       </nav>
